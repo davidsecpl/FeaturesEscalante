@@ -1,7 +1,7 @@
-import { MainScreen} from './screens/index';
+import AppNavigator from "./navigation/index";
 
 export default function App() {
   return (
-    <MainScreen/>
+    <AppNavigator />
   );
 }

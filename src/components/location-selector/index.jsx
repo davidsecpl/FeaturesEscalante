@@ -1,10 +1,15 @@
 import { View, Text, Button, Image, Alert } from 'react-native';
 import { styles } from './styles';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getCurrentPositionAsync, requestForegroundPermissionsAsync } from 'expo-location';
 import MapPreview from '../map-preview';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const LocationSelector = ({ onLocation }) => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { mapLocation } = route.params || {};
+
   const [pickedLocation, setPickeLocation] = useState(null);
 
   const verifyPermissions = async () => {
@@ -19,7 +24,7 @@ const LocationSelector = ({ onLocation }) => {
     return true;
   };
 
-  const onHandlerLocation = async () => {
+  const onHandlerLocation = async (isMaps = false) => {
     const isLocationPermission = await verifyPermissions();
     if (!isLocationPermission) return;
 
@@ -31,14 +36,30 @@ const LocationSelector = ({ onLocation }) => {
 
     setPickeLocation({ lat: latitude, lng: longitude });
     onLocation({ lat: latitude, lng: longitude });
+
+    if (isMaps) {
+      navigation.navigate('Maps', { coords: { lat: latitude, lng: longitude } });
+    }
   };
+
+  useEffect(() => {
+    if (mapLocation) {
+      setPickeLocation(mapLocation);
+      onLocation(mapLocation);
+    }
+  }, [mapLocation]);
 
   return (
     <View style={styles.container}>
       <MapPreview location={pickedLocation} style={styles.preview}>
-          <Text style={styles.text}>Selecciona una ubicación</Text>
+        <Text style={styles.text}>Selecciona una ubicación</Text>
       </MapPreview>
-      <Button title="Ubicame" color="#3EC300" onPress={onHandlerLocation} />
+      <Button title="Ubícame" color="#3EC300" onPress={() =>onHandlerLocation()} />
+      <Button
+        title="Seleccionar ubicación"
+        color="#3EC300"
+        onPress={() => onHandlerLocation(true)}
+      />
     </View>
   );
 };
